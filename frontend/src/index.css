@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@config "../tailwind.config.js";
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+  background-color: #F8FAFC;
+  color: #1E293B;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* স্মুথ কাস্টম স্ক্রলবার */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* প্রিন্টের জন্য রুলস */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* স্মুথ নোটিশ টিকার অ্যানিমেশন */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* মোবাইল সেফ এরিয়া বটম বার */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
