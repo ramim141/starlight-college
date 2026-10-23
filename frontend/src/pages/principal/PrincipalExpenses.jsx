@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getExpensesListApi, verifyExpenseApi } from '../../api/adminFinance';
 import { CreditCard, CheckCircle2, XCircle, Eye, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import PrincipalPageHero from '../../components/principal/PrincipalPageHero';
 
 const PrincipalExpenses = () => {
   const [expenses, setExpenses] = useState([]);
@@ -37,10 +38,7 @@ const PrincipalExpenses = () => {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-3xl bg-white p-6 border border-slate-100 shadow-soft">
-        <h2 className="text-lg font-bold text-brand-navy">খরচের ভাউচার অডিট ও অনুমোদন</h2>
-        <p className="text-xs text-slate-500">অ্যাকাউন্ট্যান্টের এন্ট্রি করা ভাউচার রসিদ যাচাই করে অনুমোদন (Approve) করুন।</p>
-      </div>
+      <PrincipalPageHero icon={CreditCard} eyebrow="অর্থায়ন ও অডিট" title="খরচের ভাউচার অডিট ও অনুমোদন" englishTitle="Expense Audit" description="অ্যাকাউন্ট্যান্টের জমা দেওয়া ভাউচার ও রসিদ যাচাই করে অনুমোদন করুন।" />
 
       {loading ? (
         <div className="flex min-h-[40vh] items-center justify-center">

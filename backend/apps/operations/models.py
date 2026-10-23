@@ -110,6 +110,202 @@ class Notice(BaseModel):
         return f"{self.title} ({self.get_audience_display()})"
 
 
+class HomepageHero(BaseModel):
+    badge = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    highlighted_title = models.CharField(max_length=255)
+    description = models.TextField()
+    primary_button_text = models.CharField(max_length=120, default='পোর্টাল প্রবেশ করুন')
+    primary_button_url = models.CharField(max_length=255, default='/login')
+    secondary_button_text = models.CharField(max_length=120, default='ভর্তি নির্দেশিকা ২০২৬')
+    secondary_button_url = models.CharField(max_length=255, default='#admission')
+    background_image = models.ImageField(upload_to='homepage/hero/', blank=True, null=True)
+    ticker_text = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Homepage Hero'
+        verbose_name_plural = 'Homepage Hero'
+
+    def __str__(self):
+        return self.title
+
+
+class HomepageService(BaseModel):
+    key = models.SlugField(max_length=50, unique=True)
+    title = models.CharField(max_length=120)
+    description = models.CharField(max_length=255)
+    badge = models.CharField(max_length=80, blank=True)
+    action_label = models.CharField(max_length=120, blank=True)
+    modal_description = models.TextField(blank=True)
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['display_order', 'id']
+        verbose_name = 'Homepage Service Card'
+        verbose_name_plural = 'Homepage Service Cards'
+
+    def __str__(self):
+        return self.title
+
+
+class HomepageDepartment(BaseModel):
+    key = models.SlugField(max_length=50, unique=True)
+    title = models.CharField(max_length=150)
+    description = models.TextField()
+    features = models.JSONField(default=list, blank=True)
+    mandatory_subjects = models.TextField(blank=True)
+    optional_subjects = models.TextField(blank=True)
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['display_order', 'id']
+        verbose_name = 'Homepage Department'
+        verbose_name_plural = 'Homepage Departments'
+
+    def __str__(self):
+        return self.title
+
+
+class HomepageAbout(BaseModel):
+    badge = models.CharField(max_length=120)
+    principal_name = models.CharField(max_length=150)
+    principal_role = models.CharField(max_length=150)
+    principal_credentials = models.CharField(max_length=255, blank=True)
+    title = models.CharField(max_length=255)
+    first_paragraph = models.TextField()
+    second_paragraph = models.TextField(blank=True)
+    principal_photo = models.ImageField(upload_to='homepage/about/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Homepage About'
+        verbose_name_plural = 'Homepage About'
+
+    def __str__(self):
+        return self.title
+
+
+class HomepageAdmission(BaseModel):
+    badge = models.CharField(max_length=120)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Homepage Admission'
+        verbose_name_plural = 'Homepage Admissions'
+
+    def __str__(self):
+        return self.title
+
+
+class HomepageAdmissionStep(BaseModel):
+    admission = models.ForeignKey(HomepageAdmission, on_delete=models.CASCADE, related_name='steps')
+    step = models.CharField(max_length=20)
+    title = models.CharField(max_length=120)
+    description = models.CharField(max_length=255)
+    color = models.CharField(max_length=50, default='bg-[#EA580C]')
+    display_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['display_order', 'id']
+        verbose_name = 'Homepage Admission Step'
+        verbose_name_plural = 'Homepage Admission Steps'
+
+    def __str__(self):
+        return self.title
+
+
+class HomepageFAQ(BaseModel):
+    admission = models.ForeignKey(HomepageAdmission, on_delete=models.CASCADE, related_name='faqs')
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['display_order', 'id']
+        verbose_name = 'Homepage FAQ'
+        verbose_name_plural = 'Homepage FAQs'
+
+    def __str__(self):
+        return self.question
+
+
+class HomepageContact(BaseModel):
+    badge = models.CharField(max_length=120)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    address = models.TextField()
+    hotline = models.CharField(max_length=255)
+    office_hours = models.CharField(max_length=255)
+    form_title = models.CharField(max_length=255)
+    form_description = models.TextField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Homepage Contact'
+        verbose_name_plural = 'Homepage Contact'
+
+    def __str__(self):
+        return self.title
+
+
+class AdmissionInquiry(BaseModel):
+    """
+    পাবলিক ওয়েবসাইট হতে প্রেরিত শিক্ষার্থী বা অভিভাবকের ভর্তি সংক্রান্ত জিজ্ঞাসা / ইনকোয়ারি।
+    """
+    class AcademicGroup(models.TextChoices):
+        SCIENCE = 'SCIENCE', 'বিজ্ঞান বিভাগ (Science)'
+        BUSINESS = 'BUSINESS', 'ব্যবসায় শিক্ষা (Business Studies)'
+        HUMANITIES = 'HUMANITIES', 'মানবিক বিভাগ (Humanities)'
+
+    class InquiryStatus(models.TextChoices):
+        PENDING = 'PENDING', 'নতুন / অপেক্ষমাণ (Pending)'
+        CONTACTED = 'CONTACTED', 'যোগাযোগ করা হয়েছে (Contacted)'
+        RESOLVED = 'RESOLVED', 'ভর্তি সম্পন্ন / নিষ্পন্ন (Resolved)'
+        DISMISSED = 'DISMISSED', 'বাতিল (Dismissed)'
+
+    name = models.CharField(max_length=150, help_text="শিক্ষার্থী বা অভিভাবকের পূর্ণ নাম")
+    phone = models.CharField(max_length=25, db_index=True, help_text="মোবাইল নম্বর")
+    group = models.CharField(
+        max_length=20,
+        choices=AcademicGroup.choices,
+        default=AcademicGroup.SCIENCE,
+        db_index=True,
+        help_text="আগ্রহী বিভাগ"
+    )
+    message = models.TextField(blank=True, help_text="জিজ্ঞাসা বা মন্তব্য")
+
+    status = models.CharField(
+        max_length=20,
+        choices=InquiryStatus.choices,
+        default=InquiryStatus.PENDING,
+        db_index=True
+    )
+    notes = models.TextField(blank=True, help_text="অধ্যক্ষ বা ভর্তি অফিসারের অভ্যন্তরীণ নোট")
+    contacted_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='contacted_inquiries'
+    )
+    contacted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Admission Inquiry'
+        verbose_name_plural = 'Admission Inquiries'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.phone}) - {self.get_group_display()} [{self.status}]"
+
+
 class PersonalNote(BaseModel):
     """
     প্রিন্সিপাল, শিক্ষক, অ্যাকাউন্ট্যান্ট এবং শিক্ষার্থীদের নিজস্ব গোপন শর্ট নোট (Sticky Notes)।

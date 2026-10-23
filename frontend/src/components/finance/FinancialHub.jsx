@@ -333,7 +333,7 @@ const FinancialHub = ({
   return (
     <div className="space-y-6">
       {/* হেডার */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-[#0F2C59] p-6 rounded-2xl border border-white/10 text-white shadow-xl">
+      <div className="relative isolate flex flex-col gap-5 overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-[#0A2147] via-[#0F2C59] to-[#173D70] p-6 text-white shadow-xl sm:p-8">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-emerald-500/20 rounded-xl text-emerald-400 border border-emerald-500/30">
             <DollarSign className="w-6 h-6" />
@@ -381,7 +381,7 @@ const FinancialHub = ({
         <>
           {/* ================= ১. ব্যালেন্স শিট ও আর্থিক অ্যানালিটিক্স ================= */}
           {activeTab === 'balance' && (
-            <div className="space-y-6">
+            <div data-tab-panel="true" className="space-y-6">
               {/* মেট্রিক কার্ডস */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -484,7 +484,7 @@ const FinancialHub = ({
 
           {/* ================= ২. ভাউচার অডিট ও খরচ ================= */}
           {activeTab === 'expenses' && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div data-tab-panel="true" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
               <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
@@ -581,7 +581,7 @@ const FinancialHub = ({
 
           {/* ================= ৩. অনুপস্থিতির জরিমানা মওকুফ ================= */}
           {activeTab === 'waivers' && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div data-tab-panel="true" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
               <div className="p-4 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
                   অনুপস্থিতির জরিমানা মওকুফের আবেদন তালিকা ({waivers.length})
@@ -645,7 +645,7 @@ const FinancialHub = ({
 
           {/* ================= ৪. শিক্ষক পে-রোল ও স্যালারি ক্লেইম ================= */}
           {activeTab === 'payroll' && (
-            <div className="space-y-6">
+            <div data-tab-panel="true" className="space-y-6">
               {/* বাল্ক পে-রোল তৈরি কন্ট্রোল */}
               {(isPrincipal || isAccountant) && (
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -795,7 +795,7 @@ const FinancialHub = ({
 
           {/* ================= ৫. মাস্টার বকেয়া তালিকা ================= */}
           {activeTab === 'defaulters' && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div data-tab-panel="true" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
               <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                   <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
@@ -859,7 +859,7 @@ const FinancialHub = ({
 
           {/* ================= ৬. ব্যাংক ও ভেন্ডর লেজার ================= */}
           {activeTab === 'bank' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div data-tab-panel="true" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                   <div>
@@ -910,7 +910,7 @@ const FinancialHub = ({
 
           {/* ================= ৭. শিক্ষকের নিজস্ব বেতন স্লিপ (Teacher Portal View) ================= */}
           {activeTab === 'my_payroll' && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div data-tab-panel="true" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
               <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">আমার মাসিক বেতন স্লিপ রেকর্ডসমূহ</h3>
@@ -962,7 +962,7 @@ const FinancialHub = ({
 
           {/* ================= ৮. শিক্ষকের নিজস্ব ভাতা ক্লেইম (Teacher Portal View) ================= */}
           {activeTab === 'my_claims' && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div data-tab-panel="true" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
               <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">আমার স্যালারি ও রিইমবার্সমেন্ট ক্লেইম</h3>
@@ -1310,3 +1310,6 @@ const FinancialHub = ({
 };
 
 export default FinancialHub;
+
+
+

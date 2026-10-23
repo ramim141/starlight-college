@@ -22,6 +22,74 @@ from apps.operations.models import (
 from apps.operations.models import DevicePushSubscription, InAppNotification
 
 from apps.operations.models import WhatsAppMessageLog, WhatsAppTemplate
+from apps.operations.models import (
+    AdmissionInquiry,
+    HomepageAbout,
+    HomepageAdmission,
+    HomepageAdmissionStep,
+    HomepageContact,
+    HomepageDepartment,
+    HomepageFAQ,
+    HomepageHero,
+    HomepageService,
+)
+
+
+@admin.register(AdmissionInquiry)
+class AdmissionInquiryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'phone', 'group', 'status', 'contacted_by', 'created_at')
+    list_filter = ('status', 'group', 'created_at')
+    search_fields = ('name', 'phone', 'message', 'notes')
+    ordering = ('-created_at',)
+
+
+@admin.register(HomepageHero)
+class HomepageHeroAdmin(admin.ModelAdmin):
+    list_display = ('title', 'is_active', 'updated_at')
+
+
+@admin.register(HomepageService)
+class HomepageServiceAdmin(admin.ModelAdmin):
+    list_display = ('title', 'key', 'display_order', 'is_active')
+    list_filter = ('is_active',)
+    ordering = ('display_order',)
+
+
+@admin.register(HomepageDepartment)
+class HomepageDepartmentAdmin(admin.ModelAdmin):
+    list_display = ('title', 'key', 'display_order', 'is_active')
+    list_filter = ('is_active',)
+    ordering = ('display_order',)
+
+
+@admin.register(HomepageAbout)
+class HomepageAboutAdmin(admin.ModelAdmin):
+    list_display = ('principal_name', 'title', 'is_active', 'updated_at')
+
+
+@admin.register(HomepageAdmission)
+class HomepageAdmissionAdmin(admin.ModelAdmin):
+    list_display = ('title', 'display_order', 'is_active')
+    list_filter = ('is_active',)
+    ordering = ('display_order',)
+
+
+@admin.register(HomepageAdmissionStep)
+class HomepageAdmissionStepAdmin(admin.ModelAdmin):
+    list_display = ('title', 'admission', 'display_order')
+    ordering = ('admission', 'display_order')
+
+
+@admin.register(HomepageFAQ)
+class HomepageFAQAdmin(admin.ModelAdmin):
+    list_display = ('question', 'admission', 'display_order', 'is_active')
+    list_filter = ('is_active',)
+    ordering = ('admission', 'display_order')
+
+
+@admin.register(HomepageContact)
+class HomepageContactAdmin(admin.ModelAdmin):
+    list_display = ('title', 'is_active', 'updated_at')
 
 @admin.register(TeacherAttendance)
 class TeacherAttendanceAdmin(admin.ModelAdmin):

@@ -256,7 +256,7 @@ LOGGING = {
 if not DEBUG:
     if len(SECRET_KEY) < 50:
         raise ImproperlyConfigured('Production SECRET_KEY must be at least 50 characters.')
-    if config('REQUIRE_POSTGRES', default=False, cast=bool) and DB_ENGINE != 'django.db.backends.postgresql':
+    if not config('REQUIRE_POSTGRES', default=False, cast=bool) or DB_ENGINE != 'django.db.backends.postgresql':
         raise ImproperlyConfigured(
             'Production requires PostgreSQL. Set DB_ENGINE and DB_* environment variables.'
         )

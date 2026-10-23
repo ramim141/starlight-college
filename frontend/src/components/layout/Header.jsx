@@ -1,40 +1,78 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getNotificationsApi, getUnreadCountApi, markNotificationReadApi, markAllNotificationsReadApi } from '../../api/notification';
-import { Bell, Menu, LogOut, CheckCheck, Clock, ExternalLink } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Bell, Menu, LogOut, CheckCheck, Clock, ExternalLink, User, KeyRound, ChevronDown } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 
-const Header = ({ onToggleSidebar }) => {
+const Header = ({ onToggleSidebar, isSidebarCollapsed = false, isSidebarOpen = false }) => {
+  const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+  const isNavigationExpanded = isDesktop ? !isSidebarCollapsed : isSidebarOpen;
   const { user, logout } = useAuth();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const queryClient = useQueryClient();
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
-  // প্রতি ৬০ সেকেন্ড পর পর নোটিফিকেশন চেক করা
-  const fetchUnread = async () => {
-    try {
-      const res = await getUnreadCountApi();
-      if (res.success) setUnreadCount(res.unread_count);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
+  // Close user menu on outside click
   useEffect(() => {
-    fetchUnread();
-    const interval = setInterval(fetchUnread, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [userMenuOpen]);
+
+  // TanStack Query: পোলিং ও উইন্ডো ফোকাসে আনরিড নোটিফিকেশন সিঙ্ক (ট্যাব ব্যাকগ্রাউন্ডে থাকলে পোলিং বিরতি)
+  const { data: unreadData } = useQuery({
+    queryKey: ['unread_notifications_count'],
+    queryFn: getUnreadCountApi,
+    refetchInterval: () =>
+      typeof document !== 'undefined' && document.visibilityState === 'visible' ? 60000 : false,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+    enabled: !!user,
+  });
+
+  const unreadCount = unreadData?.unread_count ?? 0;
+
+  // সার্ভিস ওয়ার্কার থেকে পুশ নোটিফিকেশন রিসিভ ইভেন্ট শুনলে স্বয়ংক্রিয়ভাবে ক্যাশ রিফ্রেশ করা
+  useEffect(() => {
+    const handleSwMessage = (event) => {
+      if (event.data?.type === 'PUSH_NOTIFICATION_RECEIVED') {
+        queryClient.invalidateQueries({ queryKey: ['unread_notifications_count'] });
+      }
+    };
+
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleSwMessage);
+      return () => {
+        navigator.serviceWorker.removeEventListener('message', handleSwMessage);
+      };
+    }
+  }, [queryClient]);
 
   const handleOpenDropdown = async () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
+    const nextOpen = !isOpen;
+    setIsOpen(nextOpen);
+    setUserMenuOpen(false);
+    if (nextOpen) {
       try {
         const res = await getNotificationsApi();
         if (res.success) {
           setNotifications(res.notifications || []);
-          setUnreadCount(res.unread_count || 0);
+          if (typeof res.unread_count === 'number') {
+            queryClient.setQueryData(['unread_notifications_count'], (old) => ({
+              ...old,
+              unread_count: res.unread_count,
+            }));
+          }
         }
       } catch (e) {
         console.error(e);
@@ -48,7 +86,11 @@ const Header = ({ onToggleSidebar }) => {
       setNotifications((prev) =>
         prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n))
       );
-      setUnreadCount((c) => Math.max(0, c - 1));
+      queryClient.setQueryData(['unread_notifications_count'], (old) => {
+        if (!old) return old;
+        return { ...old, unread_count: Math.max(0, (old.unread_count || 0) - 1) };
+      });
+      queryClient.invalidateQueries({ queryKey: ['unread_notifications_count'] });
       if (notif.action_url) {
         setIsOpen(false);
         navigate(notif.action_url);
@@ -62,39 +104,47 @@ const Header = ({ onToggleSidebar }) => {
     try {
       await markAllNotificationsReadApi();
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-      setUnreadCount(0);
+      queryClient.setQueryData(['unread_notifications_count'], (old) => {
+        if (!old) return old;
+        return { ...old, unread_count: 0 };
+      });
+      queryClient.invalidateQueries({ queryKey: ['unread_notifications_count'] });
     } catch (e) {
       console.error(e);
     }
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-20 items-center justify-between bg-white px-4 sm:px-8 border-b border-slate-200/80 shadow-soft">
+    <header className="sticky top-0 z-30 flex h-12 items-center justify-between bg-white px-4 sm:px-6 border-b border-slate-200/80 shadow-soft">
       {/* বাম পাশ: মেনু টগল ও শিরোনাম */}
       <div className="flex items-center space-x-3">
+        {/* মোবাইল বটম নেভ সক্রিয় থাকায় মোবাইলের রিডানড্যান্ট সাইডবার টগল লুকানো (ডেস্কটপ অপরিবর্তিত) */}
         <button
           onClick={onToggleSidebar}
-          className="rounded-xl p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange cursor-pointer"
+          aria-label="সাইডবার মেনু টগল"
+          aria-expanded={isNavigationExpanded}
+          title={isSidebarCollapsed ? 'সাইডবার খুলুন' : 'সাইডবার ছোট করুন'}
         >
           <Menu className="h-6 w-6" />
         </button>
         <div>
-          <h1 className="text-base sm:text-lg font-bold text-brand-navy">
+          <h1 className="text-sm sm:text-base font-bold text-brand-navy">
             {user?.full_name || user?.username}
           </h1>
-          <p className="text-[11px] font-semibold text-brand-orange">
+          <p className="text-[9px] font-semibold text-brand-orange">
             {user?.role_display || user?.role} ড্যাশবোর্ড
           </p>
         </div>
       </div>
 
-      {/* ডান পাশ: নোটিফিকেশন বেল ও প্রোফাইল */}
-      <div className="flex items-center space-x-3 sm:space-x-4">
+      {/* ডান পাশ: নোটিফিকেশন বেল ও ইউজার মেনু */}
+      <div className="flex items-center space-x-2 sm:space-x-3">
         {/* রিয়েল-টাইম নোটিফিকেশন বেল */}
         <div className="relative">
           <button
             onClick={handleOpenDropdown}
-            className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 transition hover:bg-brand-sky hover:text-brand-navy"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 transition hover:bg-brand-sky hover:text-brand-navy cursor-pointer"
           >
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
@@ -112,7 +162,7 @@ const Header = ({ onToggleSidebar }) => {
                 {unreadCount > 0 && (
                   <button
                     onClick={handleMarkAllRead}
-                    className="flex items-center space-x-1 text-[11px] font-semibold text-brand-orange hover:underline"
+                    className="flex items-center space-x-1 text-[11px] font-semibold text-brand-orange hover:underline cursor-pointer"
                   >
                     <CheckCheck className="h-3.5 w-3.5" />
                     <span>সব পঠিত চিহ্নিত করুন</span>
@@ -156,18 +206,87 @@ const Header = ({ onToggleSidebar }) => {
                   ))
                 )}
               </div>
+
+              {user?.role === 'STUDENT' && (
+                <div className="bg-slate-50 p-2 text-center border-t border-slate-100">
+                  <Link
+                    to="/student/notifications"
+                    onClick={() => setIsOpen(false)}
+                    className="text-[11px] font-bold text-brand-orange hover:underline inline-flex items-center space-x-1"
+                  >
+                    <span>সকল নোটিফিকেশন দেখুন</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* লগআউট বাটন */}
-        <button
-          onClick={logout}
-          title="লগআউট"
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600 transition hover:bg-red-600 hover:text-white"
-        >
-          <LogOut className="h-4 w-4" />
-        </button>
+        {/* ইউজার মেনু ড্রপডাউন */}
+        <div className="relative" ref={userMenuRef}>
+          <button
+            onClick={() => {
+              setUserMenuOpen(!userMenuOpen);
+              setIsOpen(false);
+            }}
+            className="flex items-center space-x-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 p-1.5 sm:px-3 text-slate-700 transition cursor-pointer"
+          >
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0F2C59] text-white text-xs font-bold">
+              <User className="h-4 w-4" />
+            </div>
+            <span className="hidden sm:inline-block text-xs font-bold text-slate-800 max-w-[120px] truncate">
+              {user?.full_name || user?.username}
+            </span>
+            <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
+          </button>
+
+          {userMenuOpen && (
+            <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl bg-white shadow-premium border border-slate-200/90 z-50 divide-y divide-slate-100">
+              <div className="p-3.5 bg-slate-50/70">
+                <p className="text-xs font-bold text-brand-navy truncate">
+                  {user?.full_name || user?.username}
+                </p>
+                <p className="text-[10px] text-slate-500 font-mono mt-0.5">
+                  @{user?.username} • {user?.role_display || user?.role}
+                </p>
+              </div>
+
+              <div className="p-1.5 space-y-1">
+                {user?.role === 'STUDENT' && (
+                  <Link
+                    to="/student/profile"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center space-x-2.5 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-brand-orange transition cursor-pointer"
+                  >
+                    <User className="h-4 w-4 text-brand-navy" />
+                    <span>আমার প্রোফাইল</span>
+                  </Link>
+                )}
+
+                <Link
+                  to="/change-password"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="flex items-center space-x-2.5 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-brand-orange transition cursor-pointer"
+                >
+                  <KeyRound className="h-4 w-4 text-orange-600" />
+                  <span>পাসওয়ার্ড পরিবর্তন</span>
+                </Link>
+
+                <button
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center space-x-2.5 rounded-xl px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4 text-rose-600" />
+                  <span>লগআউট</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

@@ -133,7 +133,7 @@ const TransportFleetHub = ({ overrideRole = null }) => {
   return (
     <div className="space-y-6">
       {/* হেডার */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-[#0F2C59] p-6 rounded-2xl border border-white/10 text-white shadow-xl">
+      <div className="relative isolate flex flex-col gap-5 overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-[#0A2147] via-[#0F2C59] to-[#173D70] p-6 text-white shadow-xl sm:p-8">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-amber-500/20 rounded-xl text-amber-400 border border-amber-500/30">
             <Bus className="w-6 h-6" />
@@ -184,7 +184,7 @@ const TransportFleetHub = ({ overrideRole = null }) => {
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-orange border-t-transparent"></div>
         </div>
       ) : activeTab === 'fleet' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div data-tab-panel="true" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {vehicles.map((v) => (
             <div
               key={v.id}
@@ -474,3 +474,6 @@ const TransportFleetHub = ({ overrideRole = null }) => {
 };
 
 export default TransportFleetHub;
+
+
+

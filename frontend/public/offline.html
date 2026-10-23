@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0F2C59" />
+    <title>ইন্টারনেট সংযোগ বিচ্ছিন্ন — স্টারলাইট কলেজ</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: #F8FAFC;
+        color: #1E293B;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        text-align: center;
+      }
+      .card {
+        background: #ffffff;
+        border: 1px solid #E2E8F0;
+        border-radius: 28px;
+        padding: 40px 28px;
+        max-width: 440px;
+        width: 100%;
+        box-shadow: 0 10px 30px -5px rgba(15, 44, 89, 0.08);
+      }
+      .icon-box {
+        width: 72px;
+        height: 72px;
+        background: #FFF1EE;
+        color: #FF5722;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px auto;
+      }
+      .icon-box svg {
+        width: 36px;
+        height: 36px;
+      }
+      h1 {
+        font-size: 20px;
+        font-weight: 800;
+        color: #0F2C59;
+        margin-bottom: 8px;
+        line-height: 1.35;
+      }
+      p {
+        font-size: 13px;
+        color: #64748B;
+        line-height: 1.6;
+        margin-bottom: 28px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        background: #0F2C59;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 14px;
+        padding: 14px 20px;
+        border-radius: 16px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.2s, transform 0.1s;
+      }
+      .btn:hover {
+        background: #1E3A8A;
+      }
+      .btn:active {
+        transform: scale(0.98);
+      }
+      .footer-note {
+        margin-top: 24px;
+        font-size: 11px;
+        color: #94A3B8;
+      }
+      .helpline {
+        color: #0F2C59;
+        font-weight: 700;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="icon-box">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+          <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+          <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+          <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+          <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+          <line x1="12" y1="20" x2="12.01" y2="20"></line>
+        </svg>
+      </div>
+
+      <h1>ইন্টারনেট সংযোগ নেই</h1>
+      <p>
+        আপনার ডিভাইসটি বর্তমানে অফলাইনে রয়েছে। পূর্বে লোড হওয়া নোটিশ ও কনটেন্ট অফলাইনে দেখা যাবে, অথবা সংযোগ ফিরে আসার পর পৃষ্ঠাটি রিফ্রেশ করুন।
+      </p>
+
+      <button class="btn" onclick="window.location.reload()">
+        পুনরায় চেষ্টা করুন
+      </button>
+
+      <div class="footer-note">
+        জরুরি প্রয়োজনে হেল্পলাইন:
+        <a class="helpline" href="tel:+8801712345678">+৮৮০১৭১২-৩৪৫৬৭৮</a>
+      </div>
+    </div>
+  </body>
+</html>

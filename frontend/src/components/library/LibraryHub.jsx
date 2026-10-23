@@ -159,7 +159,7 @@ const LibraryHub = ({ overrideRole = null }) => {
   return (
     <div className="space-y-6">
       {/* হেডার */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-[#0F2C59] p-6 rounded-2xl border border-white/10 text-white shadow-xl">
+      <div className="relative isolate flex flex-col gap-5 overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-[#0A2147] via-[#0F2C59] to-[#173D70] p-6 text-white shadow-xl sm:p-8">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-teal-500/20 rounded-xl text-teal-400 border border-teal-500/30">
             <Library className="w-6 h-6" />
@@ -209,7 +209,7 @@ const LibraryHub = ({ overrideRole = null }) => {
         </div>
       ) : activeTab === 'books' ? (
         /* ================= ১. বই ক্যাটালগ ================= */
-        <div className="space-y-4">
+        <div data-tab-panel="true" className="space-y-4">
           <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
@@ -501,3 +501,7 @@ const LibraryHub = ({ overrideRole = null }) => {
 };
 
 export default LibraryHub;
+
+
+
+

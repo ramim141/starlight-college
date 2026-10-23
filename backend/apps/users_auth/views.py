@@ -85,6 +85,9 @@ class ChangePasswordView(APIView):
 
         request.user.set_password(new_password)
         request.user.save()
+        if hasattr(request.user, 'student_profile') and getattr(request.user.student_profile, 'temporary_pin_token', ''):
+            request.user.student_profile.temporary_pin_token = ''
+            request.user.student_profile.save(update_fields=['temporary_pin_token'])
         return Response(
             {"success": True, "message": "পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে।"},
             status=status.HTTP_200_OK

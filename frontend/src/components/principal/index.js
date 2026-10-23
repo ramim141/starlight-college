@@ -1,0 +1,10 @@
+export { default as PrincipalDashboard } from './dashboard/PrincipalDashboard';
+export { default as PrincipalHomepageContent } from './homepage/PrincipalHomepageContent';
+export { default as PrincipalStaff } from './staff/PrincipalStaff';
+export { default as PrincipalSections } from './sections/PrincipalSections';
+export { default as PrincipalSeatPlan } from './seat-plan/PrincipalSeatPlan';
+export { default as PrincipalCertificates } from './certificates/PrincipalCertificates';
+export { default as PrincipalBroadcast } from './broadcast/PrincipalBroadcast';
+export { default as PrincipalAuditLogs } from './audit-logs/PrincipalAuditLogs';
+export { default as StudentManagementPanel } from './StudentManagementPanel';
+export { default as Student360Modal } from './Student360Modal';

@@ -18,7 +18,15 @@ from apps.operations.views import (
     ClubMembershipViewSet,
     ClubViewSet,
     SMSBroadcastViewSet,
-
+    HomepageHeroViewSet,
+    HomepageServiceViewSet,
+    HomepageDepartmentViewSet,
+    HomepageAboutViewSet,
+    HomepageAdmissionViewSet,
+    HomepageAdmissionStepViewSet,
+    HomepageFAQViewSet,
+    HomepageContactViewSet,
+    AdmissionInquiryViewSet,
 )
 from apps.operations.views import WhatsAppNotificationViewSet
 from apps.operations.views import NotificationViewSet
@@ -44,6 +52,15 @@ router.register(r'club-memberships', ClubMembershipViewSet, basename='club-membe
 router.register(r'club-events', ClubEventViewSet, basename='club-event')
 router.register(r'whatsapp', WhatsAppNotificationViewSet, basename='whatsapp')
 router.register(r'notifications', NotificationViewSet, basename='notification')
+router.register(r'homepage/hero', HomepageHeroViewSet, basename='homepage-hero')
+router.register(r'homepage/services', HomepageServiceViewSet, basename='homepage-service')
+router.register(r'homepage/departments', HomepageDepartmentViewSet, basename='homepage-department')
+router.register(r'homepage/about', HomepageAboutViewSet, basename='homepage-about')
+router.register(r'homepage/admission', HomepageAdmissionViewSet, basename='homepage-admission')
+router.register(r'homepage/admission-steps', HomepageAdmissionStepViewSet, basename='homepage-admission-step')
+router.register(r'homepage/faqs', HomepageFAQViewSet, basename='homepage-faq')
+router.register(r'homepage/contact', HomepageContactViewSet, basename='homepage-contact')
+router.register(r'homepage/inquiries', AdmissionInquiryViewSet, basename='homepage-inquiry')
 
 
 urlpatterns = [

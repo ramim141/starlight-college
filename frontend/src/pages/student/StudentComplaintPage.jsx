@@ -1,109 +1,160 @@
 import React, { useState } from 'react';
-import { submitComplaintApi } from '../../api/certificate';
-import { ShieldCheck, Send, Lock } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { MessageSquarePlus, History, RefreshCw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { getMyComplaintsApi, submitComplaintApi } from '../../api/certificate';
+import ComplaintForm from '../../components/student/complaints/ComplaintForm';
+import ComplaintList from '../../components/student/complaints/ComplaintList';
+import ComplaintSuccessModal from '../../components/student/complaints/ComplaintSuccessModal';
 
 const StudentComplaintPage = () => {
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('CLASSROOM');
-  const [description, setDescription] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState('FORM'); // 'FORM' | 'HISTORY'
+  const [successData, setSuccessData] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!title.trim() || !description.trim()) {
-      toast.error('শিরোনাম ও বিবরণ পূরণ করুন');
-      return;
-    }
+  // ১. শিক্ষার্থীর পূর্ববর্তী অভিযোগ তালিকা কোয়েরি
+  const { 
+    data: complaintsData, 
+    isLoading, 
+    isError, 
+    refetch,
+    isFetching 
+  } = useQuery({
+    queryKey: ['student-complaints'],
+    queryFn: getMyComplaintsApi,
+    staleTime: 60 * 1000,
+  });
 
-    setSubmitting(true);
-    try {
-      const res = await submitComplaintApi({
-        title,
-        category,
-        description
-      });
-      if (res.id) {
-        toast.success('আপনার অভিযোগ/পরামর্শ সফলভাবে অধ্যক্ষের কাছে পৌঁছানো হয়েছে।');
-        setTitle('');
-        setDescription('');
+  const complaintsList = Array.isArray(complaintsData?.results) 
+    ? complaintsData.results 
+    : Array.isArray(complaintsData) 
+      ? complaintsData 
+      : [];
+
+  // ২. অভিযোগ সাবমিশন মিউটেশন
+  const submitMutation = useMutation({
+    mutationFn: submitComplaintApi,
+    onSuccess: (data) => {
+      // গোপনীয়তা নীতি: টোস্টে কোনো সংবেদনশীল বিবরণ বা শিরোনাম প্রতিধ্বনিত হবে না
+      toast.success('আপনার অভিযোগ/পরামর্শ সফলভাবে অধ্যক্ষের কাছে পৌঁছানো হয়েছে।');
+      setSuccessData(data);
+      queryClient.invalidateQueries({ queryKey: ['student-complaints'] });
+    },
+    onError: (err) => {
+      if (err.response?.status === 429) {
+        toast.error('অতিরিক্ত অনুরোধ করা হয়েছে। অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করে আবার চেষ্টা করুন।');
+      } else {
+        toast.error(err.response?.data?.message || 'অভিযোগ প্রেরণ করা সম্ভব হয়নি। আবার চেষ্টা করুন।');
       }
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'অভিযোগ পাঠানো সম্ভব হয়নি');
-    } finally {
-      setSubmitting(false);
-    }
+    },
+  });
+
+  const handleSubmit = (formData, resetCallback) => {
+    submitMutation.mutate(formData, {
+      onSuccess: () => {
+        if (resetCallback) resetCallback();
+      },
+    });
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 pb-12">
       
-      {/* প্রটেকশন নিশ্চয়তা ব্যানার */}
-      <div className="rounded-3xl bg-[#0F2C59] p-6 text-white shadow-soft flex items-center space-x-4">
-        <div className="h-12 w-12 rounded-2xl bg-brand-orange flex items-center justify-center text-white shrink-0">
-          <Lock className="h-6 w-6" />
-        </div>
+      {/* পেজ হেডার ও রিফ্রেশ বাটন */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-3xl bg-white p-5 sm:p-6 border border-slate-100 shadow-soft">
         <div>
-          <h2 className="text-lg font-bold">গোপন অভিযোগ ও পরামর্শ বক্স</h2>
-          <p className="text-xs text-slate-300">আপনার পরিচয় কোনো সহপাঠী বা শিক্ষকের কাছে কখনোই প্রকাশ করা হবে না। সরাসরি অধ্যক্ষ এটি পর্যালোচনা করবেন।</p>
+          <h2 className="text-lg font-bold text-brand-navy">গোপন অভিযোগ ও পরামর্শ বক্স</h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            কলেজ সংক্রান্ত যেকোনো সমস্যা বা উন্নয়নমূলক পরামর্শ সরাসরি অধ্যক্ষকে জানান।
+          </p>
         </div>
+
+        <button
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="flex items-center space-x-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition disabled:opacity-60 min-h-[44px]"
+          title="রিফ্রেশ করুন"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin text-brand-orange' : 'text-slate-500'}`} />
+          <span>রিফ্রেশ</span>
+        </button>
       </div>
 
-      {/* সাবমিশন ফর্ম */}
-      <div className="rounded-3xl bg-white p-8 border border-slate-200 shadow-soft">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-600 uppercase mb-1">অভিযোগের বিভাগ / ক্যাটাগরি</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-semibold text-slate-800 focus:border-brand-orange focus:outline-none"
-            >
-              <option value="CLASSROOM">শ্রেণিকক্ষ ও পরিবেশগত সমস্যা (Classroom Facility)</option>
-              <option value="BULLYING">র‌্যাগিং বা বুলিং (Bullying/Harassment)</option>
-              <option value="TEACHER">শিক্ষক সংক্রান্ত মতামত (Teacher Feedback)</option>
-              <option value="CAMPUS">ক্যান্টিন ও ক্যাম্পাস পরিচ্ছন্নতা (Campus & Canteen)</option>
-              <option value="ACADEMIC">পড়ালেখা ও পরীক্ষা সংক্রান্ত (Academic)</option>
-              <option value="OTHER">অন্যান্য সাধারণ পরামর্শ (Other)</option>
-            </select>
-          </div>
+      {/* ট্যাব নেভিগেশন (স্লাইডিং পিল) */}
+      <div className="flex rounded-2xl bg-slate-100 p-1.5 border border-slate-200/80">
+        <button
+          type="button"
+          onClick={() => setActiveTab('FORM')}
+          className={`flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-xl text-xs font-bold transition min-h-[44px] ${
+            activeTab === 'FORM'
+              ? 'bg-white text-brand-navy shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <MessageSquarePlus className="h-4 w-4" />
+          <span>নতুন অভিযোগ লিখুন</span>
+        </button>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-600 uppercase mb-1">সংক্ষিপ্ত শিরোনাম</label>
-            <input
-              type="text"
-              placeholder="যেমন: রুম ৩০২-এর ফ্যান ঘুরছে না অথবা লাইব্রেরির সময় বৃদ্ধি"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold text-slate-800 focus:border-brand-orange focus:outline-none"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-600 uppercase mb-1">বিস্তারিত বিবরণ</label>
-            <textarea
-              rows="4"
-              placeholder="সমস্যা বা পরামর্শের বিস্তারিত এখানে লিখুন..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-800 focus:border-brand-orange focus:outline-none"
-              required
-            />
-          </div>
-
-          <div className="flex justify-end pt-2">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex items-center space-x-2 rounded-xl bg-brand-orange px-6 py-3 text-xs font-bold text-white shadow-md shadow-brand-orange/30 hover:bg-brand-orange-hover transition disabled:opacity-70"
-            >
-              <Send className="h-4 w-4" />
-              <span>{submitting ? 'পাঠানো হচ্ছে...' : 'গোপনে প্রেরণ করুন'}</span>
-            </button>
-          </div>
-        </form>
+        <button
+          type="button"
+          onClick={() => setActiveTab('HISTORY')}
+          className={`flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-xl text-xs font-bold transition min-h-[44px] ${
+            activeTab === 'HISTORY'
+              ? 'bg-white text-brand-navy shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <History className="h-4 w-4" />
+          <span>আমার প্রেরিত তালিকা</span>
+          {complaintsList.length > 0 && (
+            <span className="rounded-full bg-brand-orange px-2 py-0.2 text-[10px] font-extrabold text-white">
+              {complaintsList.length}
+            </span>
+          )}
+        </button>
       </div>
+
+      {/* কনটেন্ট এলাকা */}
+      {activeTab === 'FORM' ? (
+        <ComplaintForm 
+          onSubmit={handleSubmit} 
+          submitting={submitMutation.isPending} 
+        />
+      ) : (
+        <div>
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-36 rounded-3xl bg-slate-100 animate-pulse border border-slate-200/70" />
+              ))}
+            </div>
+          ) : isError ? (
+            <div className="rounded-3xl bg-white p-8 text-center border border-slate-200">
+              <AlertTriangle className="mx-auto h-10 w-10 text-rose-500 mb-2" />
+              <h4 className="text-sm font-bold text-slate-800">অভিযোগ তালিকা লোড করা সম্ভব হয়নি</h4>
+              <button
+                onClick={() => refetch()}
+                className="mt-3 rounded-xl bg-brand-navy px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 transition"
+              >
+                পুনরায় চেষ্টা করুন
+              </button>
+            </div>
+          ) : (
+            <ComplaintList 
+              complaints={complaintsList} 
+              onNewComplaintClick={() => setActiveTab('FORM')} 
+            />
+          )}
+        </div>
+      )}
+
+      {/* সাবমিশন সাকসেস ট্র্যাকিং পপআপ */}
+      <ComplaintSuccessModal
+        isOpen={!!successData}
+        complaintData={successData}
+        onClose={() => setSuccessData(null)}
+        onViewHistory={() => setActiveTab('HISTORY')}
+      />
 
     </div>
   );

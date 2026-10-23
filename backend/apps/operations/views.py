@@ -37,6 +37,15 @@ from apps.operations.models import (
     TeacherLeave,
     WhatsAppMessageLog,
     WhatsAppTemplate,
+    AdmissionInquiry,
+    HomepageAbout,
+    HomepageAdmission,
+    HomepageAdmissionStep,
+    HomepageContact,
+    HomepageDepartment,
+    HomepageFAQ,
+    HomepageHero,
+    HomepageService,
 )
 from apps.operations.serializers import (
     AlumniRecordSerializer,
@@ -61,9 +70,120 @@ from apps.operations.serializers import (
     TeacherLeaveSerializer,
     WhatsAppMessageLogSerializer,
     WhatsAppTemplateSerializer,
+    HomepageAboutSerializer,
+    HomepageAdmissionSerializer,
+    HomepageAdmissionStepSerializer,
+    HomepageContactSerializer,
+    HomepageDepartmentSerializer,
+    HomepageFAQSerializer,
+    HomepageHeroSerializer,
+    HomepageServiceSerializer,
+    AdmissionInquirySerializer,
 )
 from apps.operations.services import WhatsAppNotificationService
 from apps.users_auth.models import User
+
+
+class PrincipalManagedContentViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        if self.request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return [AllowAny()]
+        return [IsPrincipal()]
+
+
+class HomepageHeroViewSet(PrincipalManagedContentViewSet):
+    queryset = HomepageHero.objects.filter(is_active=True)
+    serializer_class = HomepageHeroSerializer
+
+
+class HomepageServiceViewSet(PrincipalManagedContentViewSet):
+    queryset = HomepageService.objects.filter(is_active=True)
+    serializer_class = HomepageServiceSerializer
+
+
+class HomepageDepartmentViewSet(PrincipalManagedContentViewSet):
+    queryset = HomepageDepartment.objects.filter(is_active=True)
+    serializer_class = HomepageDepartmentSerializer
+
+
+class HomepageAboutViewSet(PrincipalManagedContentViewSet):
+    queryset = HomepageAbout.objects.filter(is_active=True)
+    serializer_class = HomepageAboutSerializer
+
+
+class HomepageAdmissionViewSet(PrincipalManagedContentViewSet):
+    queryset = HomepageAdmission.objects.filter(is_active=True).prefetch_related('steps', 'faqs')
+    serializer_class = HomepageAdmissionSerializer
+
+
+class HomepageAdmissionStepViewSet(PrincipalManagedContentViewSet):
+    queryset = HomepageAdmissionStep.objects.all()
+    serializer_class = HomepageAdmissionStepSerializer
+
+
+class HomepageFAQViewSet(PrincipalManagedContentViewSet):
+    queryset = HomepageFAQ.objects.filter(is_active=True)
+    serializer_class = HomepageFAQSerializer
+
+
+class HomepageContactViewSet(PrincipalManagedContentViewSet):
+    queryset = HomepageContact.objects.filter(is_active=True)
+    serializer_class = HomepageContactSerializer
+
+
+class AdmissionInquiryViewSet(viewsets.ModelViewSet):
+    """
+    পাবলিক ওয়েবসাইট হতে প্রেরিত ভর্তি সংক্রান্ত জিজ্ঞাসা / ইনকোয়ারি।
+    - যেকোনো ভিজিটর (পাবলিক) নতুন ইনকোয়ারি জমা দিতে পারে (POST /create)।
+    - শুধুমাত্র অধ্যক্ষ/অ্যাডমিন ইনকোয়ারি তালিকা দেখতে ও স্ট্যাটাস আপডেট করতে পারেন।
+    """
+    queryset = AdmissionInquiry.objects.select_related('contacted_by').all()
+    serializer_class = AdmissionInquirySerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [AllowAny()]
+        return [IsAuthenticated(), IsPrincipal()]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        status_param = self.request.query_params.get('status')
+        group_param = self.request.query_params.get('group')
+        search_param = self.request.query_params.get('search')
+
+        if status_param:
+            qs = qs.filter(status=status_param)
+        if group_param:
+            qs = qs.filter(group=group_param)
+        if search_param:
+            qs = qs.filter(
+                Q(name__icontains=search_param) |
+                Q(phone__icontains=search_param) |
+                Q(message__icontains=search_param)
+            )
+        return qs
+
+    def perform_create(self, serializer):
+        # honeypot check: bot fields
+        honeypot = self.request.data.get('website') or self.request.data.get('bot_field')
+        if honeypot:
+            return
+        serializer.save()
+
+    @action(detail=True, methods=['post'])
+    def mark_contacted(self, request, pk=None):
+        inquiry = self.get_object()
+        inquiry.status = AdmissionInquiry.InquiryStatus.CONTACTED
+        inquiry.contacted_by = request.user
+        inquiry.contacted_at = timezone.now()
+        notes = request.data.get('notes')
+        if notes:
+            inquiry.notes = notes
+        inquiry.save(update_fields=['status', 'contacted_by', 'contacted_at', 'notes', 'updated_at'])
+        serializer = self.get_serializer(inquiry)
+        return Response(serializer.data)
 
 
 class TeacherAttendanceViewSet(viewsets.ReadOnlyModelViewSet):

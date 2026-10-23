@@ -1,0 +1,12 @@
+export { default as CustomMotionStyles } from './CustomMotionStyles';
+export { default as HomePageSkeleton } from './HomePageSkeleton';
+export { default as HeroSection } from './HeroSection';
+export { default as ServicesSection } from './ServicesSection';
+export { default as DepartmentsSection } from './DepartmentsSection';
+export { default as NoticesSection } from './NoticesSection';
+export { default as AboutSection } from './AboutSection';
+export { default as AdmissionSection } from './AdmissionSection';
+export { default as ContactSection } from './ContactSection';
+export { default as NoticeDetailModal } from './NoticeDetailModal';
+export { default as ServiceHubModal } from './ServiceHubModal';
+export { default as ResultSearchModal } from './ResultSearchModal';

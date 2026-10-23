@@ -145,7 +145,7 @@ const LeaveManagementHub = ({
   return (
     <div className="space-y-6">
       {/* হেডার */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-[#0F2C59] p-6 rounded-2xl border border-white/10 text-white shadow-xl">
+      <div className="relative isolate flex flex-col gap-5 overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-[#0A2147] via-[#0F2C59] to-[#173D70] p-6 text-white shadow-xl sm:p-8">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-brand-orange/20 rounded-xl text-brand-orange border border-brand-orange/30">
             <ClipboardCheck className="w-6 h-6" />
@@ -219,7 +219,7 @@ const LeaveManagementHub = ({
         </div>
       ) : activeTab === 'student' ? (
         /* ================= শিক্ষার্থী ছুটির তালিকা ================= */
-        <div className="space-y-4">
+        <div data-tab-panel="true" className="space-y-4">
           {studentLeaves.length === 0 ? (
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
               <CheckCircle2 className="w-12 h-12 mx-auto mb-3 opacity-30 text-emerald-500" />
@@ -515,3 +515,7 @@ const LeaveManagementHub = ({
 };
 
 export default LeaveManagementHub;
+
+
+
+

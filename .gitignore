@@ -17,8 +17,7 @@ venv.bak/
 *.sqlite3-wal
 
 # Environment variables & credentials
-.env
-*.env
+.env*
 !.env.example
 
 # Node.js & Frontend builds
@@ -26,6 +25,8 @@ node_modules/
 dist/
 dist-ssr/
 *.local
+package-lock.json
+all_code.txt
 
 # Logs
 logs/
@@ -45,3 +46,9 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Uploaded/runtime data and credentials
+media/
+*.pem
+*.key
+*secret*

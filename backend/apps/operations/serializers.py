@@ -23,6 +23,15 @@ from apps.operations.models import (
     TeacherLeave,
     WhatsAppMessageLog,
     WhatsAppTemplate,
+    AdmissionInquiry,
+    HomepageAbout,
+    HomepageAdmission,
+    HomepageAdmissionStep,
+    HomepageContact,
+    HomepageDepartment,
+    HomepageFAQ,
+    HomepageHero,
+    HomepageService,
 )
 from apps.users_auth.models import User
 
@@ -109,6 +118,106 @@ class NoticeSerializer(serializers.ModelSerializer):
             attrs['target_section'] = None
 
         return attrs
+
+
+class HomepageHeroSerializer(serializers.ModelSerializer):
+    background_image = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = HomepageHero
+        fields = '__all__'
+
+
+class HomepageServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomepageService
+        fields = '__all__'
+
+
+class HomepageDepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomepageDepartment
+        fields = '__all__'
+
+
+class HomepageAboutSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomepageAbout
+        fields = '__all__'
+
+
+class HomepageAdmissionStepSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomepageAdmissionStep
+        fields = '__all__'
+
+
+class HomepageFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomepageFAQ
+        fields = '__all__'
+
+
+class HomepageAdmissionSerializer(serializers.ModelSerializer):
+    steps = HomepageAdmissionStepSerializer(many=True, read_only=True)
+    faqs = HomepageFAQSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = HomepageAdmission
+        fields = '__all__'
+
+
+class HomepageContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomepageContact
+        fields = '__all__'
+
+
+class AdmissionInquirySerializer(serializers.ModelSerializer):
+    group_display = serializers.CharField(source='get_group_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    contacted_by_name = serializers.CharField(source='contacted_by.get_full_name', read_only=True)
+
+    class Meta:
+        model = AdmissionInquiry
+        fields = [
+            'id',
+            'name',
+            'phone',
+            'group',
+            'group_display',
+            'message',
+            'status',
+            'status_display',
+            'notes',
+            'contacted_by',
+            'contacted_by_name',
+            'contacted_at',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'contacted_by_name']
+
+    def validate_name(self, value):
+        val = (value or '').strip()
+        if not val:
+            raise serializers.ValidationError('আপনার বা শিক্ষার্থীর পূর্ণ নাম আবশ্যক।')
+        return val
+
+    def validate_phone(self, value):
+        val = (value or '').strip()
+        if not val:
+            raise serializers.ValidationError('মোবাইল নম্বর আবশ্যক।')
+        # বাংলা সংখ্যাকে ইংরেজি সংখ্যায় রূপান্তর
+        bengali_digits = '০১২৩৪৫৬৭৮৯'
+        clean_phone = ''
+        for ch in val:
+            idx = bengali_digits.find(ch)
+            clean_phone += str(idx) if idx != -1 else ch
+        clean_phone = ''.join(c for c in clean_phone if c.isdigit() or c == '+')
+        if len(clean_phone) < 11:
+            raise serializers.ValidationError('সঠিক ১১ ডিজিটের মোবাইল নম্বর প্রদান করুন।')
+        return clean_phone
 
 
 class PersonalNoteSerializer(serializers.ModelSerializer):

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -14,13 +14,18 @@ import {
   Users
 } from 'lucide-react';
 
-const PublicNavbar = () => {
+const PublicNavbar = ({ onOpenResultModal }) => {
   const { user, isAuthenticated } = useAuth();
   const [isDrawerMounted, setIsDrawerMounted] = useState(false);
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const drawerTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => clearTimeout(drawerTimerRef.current);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,6 +37,7 @@ const PublicNavbar = () => {
 
   // ২-ফেজ মোবাইল ড্রয়ার ওপেন (Double RAF)
   const openMobileDrawer = () => {
+    clearTimeout(drawerTimerRef.current);
     setIsDrawerMounted(true);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setIsDrawerVisible(true));
@@ -41,7 +47,8 @@ const PublicNavbar = () => {
   // ২-ফেজ মোবাইল ড্রয়ার ক্লোজ (৩২০ms এক্সিট ট্রানজিশন)
   const closeMobileDrawer = () => {
     setIsDrawerVisible(false);
-    setTimeout(() => setIsDrawerMounted(false), 320);
+    clearTimeout(drawerTimerRef.current);
+    drawerTimerRef.current = setTimeout(() => setIsDrawerMounted(false), 320);
   };
 
   const toggleMobileDrawer = () => {
@@ -89,10 +96,16 @@ const PublicNavbar = () => {
   const scrollToSection = (e, href) => {
     e.preventDefault();
     closeMobileDrawer();
+    if (href === '#results' && onOpenResultModal) {
+      onOpenResultModal();
+      return;
+    }
     if (href.startsWith('#')) {
       const element = document.querySelector(href);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        navigate('/' + href);
       }
     }
   };
@@ -139,8 +152,11 @@ const PublicNavbar = () => {
           {/* কলেজ অফিশিয়াল নেভ লোগো */}
           <Link to="/" className="flex items-center group min-w-0 py-0.5 shrink-0" aria-label="স্টারলাইট কলেজ হোমপেজ">
             <img 
-              src="/nav-logo.png" 
+              src="/nav-logo.webp" 
               alt="Starlight College Sylhet" 
+              width="734"
+              height="233"
+              decoding="async"
               className="h-9 sm:h-11 md:h-12 w-auto max-w-[210px] sm:max-w-[280px] object-contain transition-transform duration-200 group-hover:scale-[1.02]" 
             />
           </Link>
@@ -200,7 +216,7 @@ const PublicNavbar = () => {
               transform: isDrawerVisible ? 'translateY(0px)' : 'translateY(-14px)',
               opacity: isDrawerVisible ? 1 : 0,
             }}
-            className="lg:hidden fixed inset-x-0 top-full bg-white/98 backdrop-blur-xl border-b border-slate-200 shadow-2xl"
+            className="lg:hidden fixed inset-x-0 top-full bg-white/98 backdrop-blur-sm border-b border-slate-200 shadow-2xl"
           >
             <div className="max-w-md mx-auto p-4 space-y-4">
               

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -18,15 +18,21 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-const MobileBottomNav = () => {
+const MobileBottomNav = ({ onOpenResultModal }) => {
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const [isSheetVisible, setIsSheetVisible] = useState(false);
   const navigate = useNavigate();
+  const sheetTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => clearTimeout(sheetTimerRef.current);
+  }, []);
 
   // ২-ফেজ বটম শীট ওপেন (Double RAF)
   const openPortalSheet = () => {
+    clearTimeout(sheetTimerRef.current);
     setIsSheetMounted(true);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setIsSheetVisible(true));
@@ -36,7 +42,8 @@ const MobileBottomNav = () => {
   // ২-ফেজ বটম শীট ক্লোজ (৩২০ms এক্সিট ট্রানজিশন)
   const closePortalSheet = () => {
     setIsSheetVisible(false);
-    setTimeout(() => setIsSheetMounted(false), 320);
+    clearTimeout(sheetTimerRef.current);
+    sheetTimerRef.current = setTimeout(() => setIsSheetMounted(false), 320);
   };
 
   // Escape key সাপোর্ট
@@ -68,7 +75,7 @@ const MobileBottomNav = () => {
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      navigate('/#' + id);
     }
   };
 
@@ -86,7 +93,7 @@ const MobileBottomNav = () => {
       {/* ১. স্টিকি মোবাইল অ্যাপ বটম বার */}
       <nav 
         aria-label="মোবাইল অ্যাপ্লিকেশন নেভিগেশন"
-        className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur-xl border-t border-slate-200/90 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] select-none"
+        className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/98 backdrop-blur-sm border-t border-slate-200/90 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] select-none"
       >
         <div className="grid grid-cols-5 h-16 max-w-lg mx-auto px-1">
           
@@ -265,6 +272,27 @@ const MobileBottomNav = () => {
                         <span className="text-[10px] text-slate-400 truncate block">{srv.desc}</span>
                       </div>
                     </Link>
+                  );
+                }
+                if (srv.href === '#results' && onOpenResultModal) {
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        closePortalSheet();
+                        onOpenResultModal();
+                      }}
+                      className="flex items-center space-x-2.5 rounded-2xl bg-slate-50 p-3 border border-slate-200/80 hover:bg-orange-50/40 hover:border-orange-300 transition-all duration-200 active:scale-98 text-left w-full cursor-pointer"
+                    >
+                      <div className={`rounded-xl bg-gradient-to-br ${srv.color} p-2 text-white shrink-0 shadow-xs`}>
+                        <IconComponent className="h-4 w-4" />
+                      </div>
+                      <div className="overflow-hidden">
+                        <span className="text-xs font-bold text-slate-800 truncate block">{srv.label}</span>
+                        <span className="text-[10px] text-slate-400 truncate block">{srv.desc}</span>
+                      </div>
+                    </button>
                   );
                 }
                 return (

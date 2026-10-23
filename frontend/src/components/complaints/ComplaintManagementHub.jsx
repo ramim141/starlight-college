@@ -133,7 +133,7 @@ const ComplaintManagementHub = ({ overrideRole = null }) => {
   return (
     <div className="space-y-6">
       {/* হেডার */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-[#0F2C59] p-6 rounded-2xl border border-white/10 text-white shadow-xl">
+      <div className="relative isolate flex flex-col gap-5 overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-[#0A2147] via-[#0F2C59] to-[#173D70] p-6 text-white shadow-xl sm:p-8">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-red-500/20 rounded-xl text-red-400 border border-red-500/30">
             <ShieldAlert className="w-6 h-6" />
@@ -183,13 +183,13 @@ const ComplaintManagementHub = ({ overrideRole = null }) => {
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-orange border-t-transparent"></div>
         </div>
       ) : complaints.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
+        <div data-tab-panel="true" key={filterStatus} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
           <ShieldAlert className="w-12 h-12 mx-auto mb-3 opacity-30 text-emerald-500" />
           <h3 className="text-base font-semibold text-slate-700 dark:text-slate-300">কোনো অভিযোগ জমা নেই</h3>
           <p className="text-xs text-slate-400 mt-1">নির্বাচিত ফিল্টারে কোনো রেকর্ড পাওয়া যায়নি।</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div data-tab-panel="true" key={filterStatus} className="grid grid-cols-1 gap-4">
           {complaints.map((item) => {
             const isRevealed = revealedIds.has(item.id);
             const studentInfo = item.student_details || {};
@@ -423,3 +423,7 @@ const ComplaintManagementHub = ({ overrideRole = null }) => {
 };
 
 export default ComplaintManagementHub;
+
+
+
+

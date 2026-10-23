@@ -1,0 +1,16 @@
+.env*
+!.env.example
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+media/
+*.log
+*.pem
+*.key
+*secret*
+__pycache__/
+.venv/
+node_modules/
+dist/
+package-lock.json
+all_code.txt

@@ -22,6 +22,7 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
 
 class StudentProfileMinimalSerializer(serializers.ModelSerializer):
     section_details = serializers.SerializerMethodField()
+    has_temporary_pin = serializers.SerializerMethodField()
 
     class Meta:
         model = StudentProfile
@@ -43,6 +44,7 @@ class StudentProfileMinimalSerializer(serializers.ModelSerializer):
             'monthly_tuition_fee',
             'uses_transport',
             'monthly_transport_fee',
+            'has_temporary_pin',
         ]
 
     def get_section_details(self, obj) -> dict:
@@ -55,6 +57,9 @@ class StudentProfileMinimalSerializer(serializers.ModelSerializer):
             "section_name": obj.section.section_name,
             "session": obj.section.session,
         }
+
+    def get_has_temporary_pin(self, obj) -> bool:
+        return bool(obj.temporary_pin_token)
 
 
 class UserMinimalSerializer(serializers.ModelSerializer):

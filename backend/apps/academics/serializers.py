@@ -70,6 +70,10 @@ class StudentDetailSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email', required=False, allow_blank=True)
     is_active = serializers.BooleanField(source='user.is_active', required=False)
     section_name_display = serializers.CharField(source='section.__str__', read_only=True)
+    class_level = serializers.CharField(source='section.class_level', read_only=True, default='')
+    class_level_display = serializers.CharField(source='section.get_class_level_display', read_only=True, default='')
+    group = serializers.CharField(source='section.group', read_only=True, default='')
+    group_display = serializers.CharField(source='section.get_group_display', read_only=True, default='')
     gender_display = serializers.CharField(source='get_gender_display', read_only=True)
     assigned_vehicle_number = serializers.CharField(source='assigned_vehicle.vehicle_number', read_only=True, default=None)
     created_by_name = serializers.SerializerMethodField()
@@ -91,6 +95,10 @@ class StudentDetailSerializer(serializers.ModelSerializer):
             'email',
             'section',
             'section_name_display',
+            'class_level',
+            'class_level_display',
+            'group',
+            'group_display',
             'roll_number',
             'session',
             'ssc_roll',

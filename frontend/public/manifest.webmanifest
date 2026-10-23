@@ -1,0 +1,39 @@
+{
+  "name": "স্টারলাইট কলেজ পোর্টাল",
+  "short_name": "Starlight",
+  "description": "স্টারলাইট কলেজ, সিলেট — আধুনিক ডিজিটাল কলেজ ম্যানেজমেন্ট সিস্টেম ও পেপারলেস ইআরপি পোর্টাল।",
+  "theme_color": "#0F2C59",
+  "background_color": "#F8FAFC",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "/",
+  "scope": "/",
+  "lang": "bn",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

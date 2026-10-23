@@ -193,6 +193,11 @@ export const getAssetCategoriesApi = async () => {
   return res.data;
 };
 
+export const createAssetCategoryApi = async (payload) => {
+  const res = await api.post('operations/asset-categories/', payload);
+  return res.data;
+};
+
 export const getMarkerStocksApi = async () => {
   const res = await api.get('operations/marker-stocks/');
   return res.data;
@@ -310,6 +315,11 @@ export const updateExamApi = async (id, payload) => {
   return res.data;
 };
 
+export const deleteExamApi = async (id) => {
+  const res = await api.delete(`examination/exams/${id}/`);
+  return res.data;
+};
+
 export const getExamSubjectConfigsApi = async (examId) => {
   const res = await api.get(`examination/configs/?exam=${examId}`);
   return res.data;
@@ -317,6 +327,16 @@ export const getExamSubjectConfigsApi = async (examId) => {
 
 export const createExamSubjectConfigApi = async (payload) => {
   const res = await api.post('examination/configs/', payload);
+  return res.data;
+};
+
+export const updateExamSubjectConfigApi = async (id, payload) => {
+  const res = await api.patch(`examination/configs/${id}/`, payload);
+  return res.data;
+};
+
+export const deleteExamSubjectConfigApi = async (id) => {
+  const res = await api.delete(`examination/configs/${id}/`);
   return res.data;
 };
 
@@ -330,6 +350,16 @@ export const createExamRoomApi = async (payload) => {
   return res.data;
 };
 
+export const updateExamRoomApi = async (id, payload) => {
+  const res = await api.patch(`examination/rooms/${id}/`, payload);
+  return res.data;
+};
+
+export const deleteExamRoomApi = async (id) => {
+  const res = await api.delete(`examination/rooms/${id}/`);
+  return res.data;
+};
+
 export const getQuestionPaperSubmissionsApi = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
   const res = await api.get(`examination/questions/${query ? '?' + query : ''}`);
@@ -337,6 +367,166 @@ export const getQuestionPaperSubmissionsApi = async (params = {}) => {
 };
 
 export const reviewQuestionPaperApi = async (id, status, feedback = '') => {
-  const res = await api.patch(`examination/questions/${id}/review/`, { status, feedback });
+  try {
+    const res = await api.patch(`examination/questions/${id}/review/`, { status, feedback });
+    return res.data;
+  } catch (err) {
+    if (err.response?.status === 404) {
+      // Fallback to direct PATCH on question paper instance
+      const res = await api.patch(`examination/questions/${id}/`, { 
+        status, 
+        principal_remarks: feedback 
+      });
+      return res.data;
+    }
+    throw err;
+  }
+};
+
+export const processExamResultsApi = async (examId, sectionId = null) => {
+  const payload = { exam_id: examId };
+  if (sectionId) payload.section_id = sectionId;
+  const res = await api.post('examination/results/process/', payload);
   return res.data;
 };
+
+export const getExamResultsApi = async (examId) => {
+  const res = await api.get(`examination/results/?exam=${examId}`);
+  return res.data;
+};
+
+// ==========================================
+// ৯. স্টাফ অ্যাকাউন্ট পরিচালনা (Staff Actions)
+// ==========================================
+export const createStaffApi = async (payload) => {
+  const res = await api.post('auth/staff/', payload);
+  return res.data;
+};
+
+export const updateStaffProfileApi = async (id, payload) => {
+  const res = await api.patch(`auth/staff/${id}/`, payload);
+  return res.data;
+};
+
+export const deactivateStaffApi = async (id) => {
+  const res = await api.delete(`auth/staff/${id}/`);
+  return res.data;
+};
+
+export const reactivateStaffApi = async (id) => {
+  const res = await api.patch(`auth/staff/${id}/`, { is_active: true });
+  return res.data;
+};
+
+// TODO: Backend endpoint POST /api/v1/auth/staff/<id>/reset-password/ needed
+export const resetStaffPasswordApi = async (id, _newPassword = '') => {
+  // Backend stub
+  console.warn(`[STUB] resetStaffPasswordApi called for ${id}. Backend endpoint required.`);
+  return { success: true, message: 'পাসওয়ার্ড রিসেটের নির্দেশ backend এ রেজিস্টার করা হয়েছে (Stub)' };
+};
+
+// TODO: Backend endpoint POST /api/v1/academics/students/<id>/reset-pin/ needed
+export const resetStudentPinApi = async (id) => {
+  // Backend stub
+  console.warn(`[STUB] resetStudentPinApi called for ${id}. Backend endpoint required.`);
+  return { success: true, message: 'স্টুডেন্ট পিন রিসেট নির্দেশ backend এ রেজিস্টার করা হয়েছে (Stub)' };
+};
+
+// ==========================================
+// ১০. দৈনিক ক্যাশ ক্লোজিং অডিট (Daily Closing Sheet)
+// ==========================================
+export const getDailyCashClosingApi = async (date = '') => {
+  const query = date ? `?date=${date}` : '';
+  const res = await api.get(`finance/analytics/daily-closing/${query}`);
+  return res.data;
+};
+
+// ==========================================
+// ১১. শিক্ষার্থীদের সামগ্রিক উপস্থিতি সারাংশ (Live Attendance)
+// ==========================================
+export const getTodayAttendanceSummaryApi = async (date = '') => {
+  const query = date ? `?date=${date}` : '';
+  const res = await api.get(`academics/attendance/${query}`);
+  return res.data;
+};
+
+// ==========================================
+// ১২. একাডেমিক শাখা ও শ্রেণি ইনচার্জ (Sections & In-charge)
+// ==========================================
+export const getSectionsListApi = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await api.get(`academics/sections/${query ? '?' + query : ''}`);
+  return res.data;
+};
+
+export const createSectionApi = async (payload) => {
+  const res = await api.post('academics/sections/', payload);
+  return res.data;
+};
+
+export const updateSectionApi = async (id, payload) => {
+  const res = await api.patch(`academics/sections/${id}/`, payload);
+  return res.data;
+};
+
+export const assignSectionInchargeApi = async (id, teacherId) => {
+  const res = await api.patch(`academics/sections/${id}/assign-incharge/`, {
+    teacher_id: teacherId
+  });
+  return res.data;
+};
+
+// ==========================================
+// ১৩. ফলাফল, মেধা তালিকা ও মার্কশিট (Reports)
+// ==========================================
+export const getMeritListApi = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await api.get(`examination/reports/merit-list/${query ? '?' + query : ''}`);
+  return res.data;
+};
+
+export const getSubjectAnalysisApi = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await api.get(`examination/reports/subject-analysis/${query ? '?' + query : ''}`);
+  return res.data;
+};
+
+export const getFailedStatisticsApi = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await api.get(`examination/reports/failed-statistics/${query ? '?' + query : ''}`);
+  return res.data;
+};
+
+export const getStudentProgressReportApi = async (examId, studentId) => {
+  const res = await api.get(`examination/reports/progress-report/?exam=${examId}&student=${studentId}`);
+  return res.data;
+};
+
+export const getSectionMarkSheetAuditApi = async (examId, subjectId, sectionId) => {
+  const res = await api.get(`examination/marks/mark-sheet/?exam=${examId}&subject=${subjectId}&section=${sectionId}`);
+  return res.data;
+};
+
+export const getSectionFeeDuesAuditApi = async (sectionId) => {
+  const res = await api.get(`finance/invoices/?section=${sectionId}&status=UNPAID`);
+  return res.data;
+};
+
+// ==========================================
+// ১৪. শিক্ষক হাজিরা ও দৈনিক ভেরিফিকেশন (Teacher Attendance)
+// ==========================================
+export const getTeacherAttendanceListApi = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await api.get(`operations/teacher-attendance/${query ? '?' + query : ''}`);
+  return res.data;
+};
+
+export const verifyTeacherAttendanceApi = async (id, approvalStatus, remarks = '') => {
+  const res = await api.patch(`operations/teacher-attendance/${id}/verify/`, {
+    approval_status: approvalStatus,
+    remarks,
+  });
+  return res.data;
+};
+
+
